@@ -1,0 +1,26 @@
+{
+    "site": "narra",
+    "inputVars": ["Hsig","Tp","Wdir","WL_mean"],
+    "addVars": ["add_shl"],
+    "yStd": ["shl_std"],
+    "yVars": ["Shoreline"],
+    "trainCombs":[
+        [1,2,2,2,2],
+        [2,1,2,2,2],
+        [2,2,1,2,2],
+        [2,2,2,1,2],
+        [2,2,2,2,1]
+    ],    
+    "histBool": 1,
+    "xSample": ["3H","6H","1D"],
+    "ySample": ["3D"],
+    "peakBool": [1, 0],
+    "numLayers": [1, 2],
+    "sizeFac": [50,500,50],
+    "dropoutRate": [0.0,0.4],
+    "learningRate": [1e-5, 1e-3],
+    "learningDecay": [1e-3, 1e-1],
+    "scalerType": "standard",
+    "batchSize": [4,20,4],
+    "epochs": [1000,2000,500]
+}

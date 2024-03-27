@@ -1,0 +1,28 @@
+{
+    "site": "narra",
+    "saveClass": "base_CV",
+    "saveVersion": "v01",
+    "xSample": "3H",
+    "ySample": "3D",
+    "inputVars": ["Hsig","Tp","Wdir","WL_mean"],
+    "addVars": ["add_shl"],
+    "yStd": ["shl_std"],
+    "yVars": ["Shoreline"],
+    "trainCombs":[
+        [1,2,2,2,2],
+        [2,1,2,2,2],
+        [2,2,1,2,2],
+        [2,2,2,1,2],
+        [2,2,2,2,1]
+    ],
+    "peakBool": 1,
+    "histBool": 1,
+    "numLayers": 2,
+    "sizeFac": 400,
+    "dropoutRate": 0.15,
+    "learningRate": 0.00016,
+    "learningDecay": 0.0255,
+    "scalerType": "standard",
+    "batchSize": 12,
+    "epochs": 1000
+}
