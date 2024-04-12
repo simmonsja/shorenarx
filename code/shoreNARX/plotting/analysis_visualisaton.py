@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 import seaborn as sns
 
 ###############################################################################
@@ -44,6 +45,20 @@ def plot_compare_structure(storeDF_in, savebool=False):
         zorder=-99,palette='dark:#59656d',#palette='dark:k',
         dodge=True, s=2, legend=False
     )
+    # add text above the median displaying the value 
+    for ii, this_site in enumerate(storeDF['site'].unique()):
+        for jj, this_case in enumerate(storeDF['case'].unique()):
+            median_val = storeDF.query('site=="{}" and case=="{}"'.format(this_site,this_case))['testRMSE'].median()
+
+            ax1.text(
+                ii + (jj-1)*0.2667,
+                median_val+0.1,
+                '{:.2f}'.format(median_val),
+                fontdict={'fontsize':8},
+                ha='center', va='bottom',
+                path_effects=[pe.withStroke(linewidth=3, foreground='white')]
+            )
+
     # turn on x and y grid
     ax1.set_ylabel('Test RMSE', labelpad=10)
     ax1.set_xlabel('Site', labelpad=10)
@@ -148,12 +163,22 @@ def plot_sensitivity_analysis(looDF, case='base', savebool=False):
     #style with sns
     g = sns.barplot(x='Variable', y='RMSE',
                     hue='Site',
+                    errorbar="sd",
                     data=looDF,
                     ax=ax1)
+    # sns.swarmplot(
+    #     x='Variable', y='RMSE',
+    #     hue='Site',
+    #     data=looDF,
+    #     dodge=True,
+    #     palette='dark:#59656d',#palette='dark:k',
+    #     s=2,
+    #     ax=ax1)
     ax2 = fig.add_subplot(122)
     g = sns.barplot(x='Variable', y='R2',
                     hue='Site',
                     data=looDF,
+                    errorbar="sd",
                     ax=ax2)
     ax2.get_legend().remove()
 

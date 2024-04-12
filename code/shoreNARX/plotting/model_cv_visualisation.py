@@ -170,12 +170,12 @@ def plot_CV_ensemble(datain,fold,ax=None,savefig=False):
         # fill between uncertainty bands
         ax1.fill_between(modDataTrain.index,
                 np.ma.masked_where(
-                    np.isnan(modDataTrain.quantile(0.05,axis=1).values),
-                    modDataTrain.quantile(0.05,axis=1).values
+                    np.isnan(modDataTrain.quantile(0.025,axis=1).values),
+                    modDataTrain.quantile(0.025,axis=1).values
                 ),
                 np.ma.masked_where(
-                    np.isnan(modDataTrain.quantile(0.95,axis=1).values),
-                    modDataTrain.quantile(0.95,axis=1).values
+                    np.isnan(modDataTrain.quantile(0.975,axis=1).values),
+                    modDataTrain.quantile(0.975,axis=1).values
                 ),
                 color=sns.xkcd_rgb["red"],
                 alpha=0.3,
@@ -208,8 +208,8 @@ def plot_CV_ensemble(datain,fold,ax=None,savefig=False):
         #fill between uncertainty bands
         ax1.fill_between(
             modDataTest.index,
-                modDataTest.quantile(0.05,axis=1).values,
-                modDataTest.quantile(0.95,axis=1).values,
+                modDataTest.quantile(0.025,axis=1).values,
+                modDataTest.quantile(0.975,axis=1).values,
                 color=sns.xkcd_rgb["true blue"],
                 alpha=0.3,
                 zorder=4
