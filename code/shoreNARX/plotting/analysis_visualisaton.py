@@ -4,6 +4,131 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+###############################################################################
+################################################################################
+# Structure analysis
+################################################################################
+################################################################################
+
+def plot_compare_structure(storeDF_in, savebool=False):
+    """
+    This function creates a boxplot and swarmplot to compare the performance of different model structures at the sites.
+
+    Parameters:
+    storeDF_in (pandas.DataFrame): The input dataframe containing the data to be plotted. It should have columns 'case', 'site', and 'testRMSE'.
+    savebool (bool, optional): A flag to determine whether to save the plot or not. If True, the plot is saved in the './figures/structure_compare' directory with the name 'structure_compare_bysite.pdf'. Default is False.
+
+    Returns:
+    None
+
+    """
+    # boxplot of nohist vs base per fold per site
+    sns.set_context("talk")
+    sns.set_style("ticks",{'axes.grid': True,})
+    fig = plt.figure(figsize=(6,4))
+    ax1 = fig.add_subplot(111)
+    palette = 'Set1'
+
+    storeDF = storeDF_in.copy().sort_values(by='case')
+    storeDF['site'] = storeDF['site'].replace({'narra':'Narrabeen','tairua':'Tairua'})
+
+    sns.boxplot(
+        data=storeDF,
+        x='site',y='testRMSE',hue='case',ax=ax1,
+        palette=palette, showfliers=False,
+        boxprops=dict(alpha=0.5)
+    )
+    sns.swarmplot(
+        data=storeDF,
+        x='site',y='testRMSE',hue='case',ax=ax1,
+        zorder=-99,palette='dark:#59656d',#palette='dark:k',
+        dodge=True, s=2, legend=False
+    )
+    # turn on x and y grid
+    ax1.set_ylabel('Test RMSE', labelpad=10)
+    ax1.set_xlabel('Site', labelpad=10)
+    ax1.legend(loc=6, bbox_to_anchor=(1.05,0.5), title='Case')
+
+    if savebool:
+        savePath =  os.path.join(
+            '.','figures','structure_compare', 'structure_compare_bysite.pdf'
+        )
+        os.makedirs(os.path.dirname(savePath), exist_ok=True)
+        plt.savefig(savePath, bbox_inches='tight', dpi=600)
+        plt.savefig(savePath.replace('.pdf','.png'), bbox_inches='tight', dpi=600)
+
+    return
+
+################################################################################
+################################################################################
+
+def plot_compare_structure_byfold(storeDF, savebool=False):
+    """
+    This function creates two boxplots and swarmplots to compare the performance of different model structures at the sites by fold.
+
+    Parameters:
+    storeDF (pandas.DataFrame): The input dataframe containing the data to be plotted. It should have columns 'case', 'site', 'fold', and 'testRMSE'.
+    savebool (bool, optional): A flag to determine whether to save the plot or not. If True, the plot is saved in the './figures/structure_compare' directory with the name 'structure_compare_byfold.pdf'. Default is False.
+
+    Returns:
+    None
+
+    """
+    # boxplot of nohist vs base per fold per site
+    sns.set_context("talk")
+    sns.set_style("ticks",{'axes.grid': True,})
+    fig = plt.figure(figsize=(14,5.5))
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    palette = 'Set1'
+
+    sns.boxplot(
+        data=storeDF.query('site=="narra"'),
+        x='fold',y='testRMSE',hue='case',ax=ax1, legend=False,
+        palette=palette,
+        boxprops=dict(alpha=0.5)
+    )
+    sns.swarmplot(
+        data=storeDF.query('site=="narra"'),
+        x='fold',y='testRMSE',hue='case',ax=ax1,
+        palette='dark:k', zorder=-99,
+        dodge=True, s=2, legend=False
+    )
+    sns.boxplot(
+        data=storeDF.query('site=="tairua"'),
+        x='fold',y='testRMSE',hue='case',ax=ax2,
+        palette=palette,
+        boxprops=dict(alpha=0.5)
+    )
+    sns.swarmplot(
+        data=storeDF.query('site=="tairua"'),
+        x='fold',y='testRMSE',hue='case',ax=ax2,
+        palette='dark:k', zorder=-99,
+        dodge=True, s=2, legend=False
+    )
+    # turn on x and y grid
+    ax1.set_title('Narrabeen', pad=10)
+    ax2.set_title('Tairua', pad=10)
+    ax1.set_ylabel('Test RMSE', labelpad=10)
+    ax2.set_ylabel('Test RMSE')
+    ax1.set_xlabel('Fold', labelpad=10)
+    ax2.set_xlabel('Fold', labelpad=10)
+    lgd = ax2.legend(loc=6, bbox_to_anchor=(1.05,0.5))
+    plt.subplots_adjust(wspace=0.2)
+
+    txt = ax1.text(-0.125, 1.1, 'a)', transform=ax1.transAxes, va='top', fontweight='bold')
+    ax2.text(-0.125, 1.1, 'b)', transform=ax2.transAxes, va='top', fontweight='bold')
+
+    if savebool:
+        savePath =  os.path.join(
+            '.','figures','structure_compare', 'structure_compare_byfold.pdf'
+        )
+        os.makedirs(os.path.dirname(savePath), exist_ok=True)
+        plt.savefig(savePath, bbox_extra_artists=(txt,lgd), bbox_inches='tight', dpi=600)
+        plt.savefig(savePath.replace('.pdf','.png'), bbox_extra_artists=(txt,lgd), bbox_inches='tight', dpi=600)
+
+    return
+
 ################################################################################
 ################################################################################
 # Sensitivity analysis
@@ -18,6 +143,7 @@ def plot_sensitivity_analysis(looDF, case='base', savebool=False):
     sns.set_context("poster")
     #sns.set(font_scale=1.8)
     sns.set_style("ticks",{'axes.grid': True})
+    sns.set_palette('tab10')
     ax1 = fig.add_subplot(121)
     #style with sns
     g = sns.barplot(x='Variable', y='RMSE',
@@ -52,6 +178,7 @@ def plot_sensitivity_analysis(looDF, case='base', savebool=False):
             '.','figures','sensitivity', 'sensitivty_case_{}.pdf'.format(case))
         os.makedirs(os.path.dirname(savePath), exist_ok=True)
         plt.savefig(savePath, bbox_extra_artists=(txt,), bbox_inches='tight', dpi=600)
+        plt.savefig(savePath.replace('.pdf','.png'), bbox_extra_artists=(txt,), bbox_inches='tight', dpi=600)
 
     return
 
@@ -61,11 +188,12 @@ def plot_sensitivity_analysis(looDF, case='base', savebool=False):
 ################################################################################
 ################################################################################
 
-def plot_hysteresis(storeDF):
+def plot_hysteresis(storeDF, case='base', savebool=False):
     # seaborn plot
     sns.set_context("talk")
     sns.set_style("ticks",{'axes.grid': True,})
     plot_num = 800 #only plot 100 realisations
+    percentiles = [1,5,25,75,95,99]
     max_wave = storeDF['Hsig'].max()
     plotDF = storeDF.melt(id_vars=['site','Hsig'])
     sites = plotDF.site.unique()
@@ -99,7 +227,7 @@ def plot_hysteresis(storeDF):
 
     fs_label = 14
     # plot the 25th 50th and 75h percentiles
-    for ii, this_perc in enumerate([1,5,25,75,95,99]):
+    for ii, this_perc in enumerate(percentiles):
         perc_data = storeDF[storeDF['site']==sites[0]].drop(columns=['site','Hsig']).quantile(this_perc/100,axis=0).to_frame().reset_index(names=['variable']).melt(id_vars='variable',var_name='percentile',value_name='value')
         sns.lineplot(x='variable', y='value', data=perc_data,color='xkcd:black',ax=ax1,linestyle='--')
         # put a small text label on each line outside the axis limits
@@ -128,11 +256,11 @@ def plot_hysteresis(storeDF):
     sns.lineplot(x='variable', y='value', data=plotDF[plotDF['site']=='tairua'], estimator=np.median, color='xkcd:black',ax=ax2)
 
     # plot the 25th 50th and 75h percentiles
-    for this_perc in [1,5,25,75,95,99]:
+    for this_perc in percentiles:
         perc_data = storeDF[storeDF['site']==sites[1]].drop(columns=['site','Hsig']).quantile(this_perc/100,axis=0).to_frame().reset_index(names=['variable']).melt(id_vars='variable',var_name='percentile',value_name='value')
         sns.lineplot(x='variable', y='value', data=perc_data,color='xkcd:black',ax=ax2,linestyle='--')
         # put a small text label on each line outside the axis limits
-        ax2.annotate('{}%'.format(this_perc), (perc_data['variable'].values[-1], np.max([perc_data['value'].values[-1],-10])), textcoords="offset points", xytext=(20,-5), ha='left', fontsize=fs_label)
+        txt_prc = ax2.annotate('{}%'.format(this_perc), (perc_data['variable'].values[-1], np.max([perc_data['value'].values[-1],-10])), textcoords="offset points", xytext=(20,-5), ha='left', fontsize=fs_label)
 
     # perc_edges = storeDF.loc[storeDF['site']==sites[1],'Hsig'].quantile(np.array([0,1,10,50,75,90,95,97.5,99,100])/100).values
     # for ii in np.arange(perc_edges.__len__()-1):
@@ -143,6 +271,10 @@ def plot_hysteresis(storeDF):
 
     # sns.despine(top=False, right=False, left=False, bottom=False)
 
+    # add an a) outside top left of ax1 and b) outside top left of ax2
+    txt = ax1.text(-0.25, 1.1, 'a)', transform=ax1.transAxes, va='top', fontweight='bold')
+    ax2.text(-0.25, 1.1, 'b)', transform=ax2.transAxes, va='top', fontweight='bold')
+
     ax2.set_ylim(-10,10)
     ax2.set_xlabel('% of observed $x_{t-1}$ as input')
     ax2.set_ylabel('')
@@ -152,11 +284,11 @@ def plot_hysteresis(storeDF):
     # place colorbar at the bottom of the plot below the x labels and centred between ax1 and ax2
     cbar = plt.colorbar(sc, ax=[ax1,ax2], orientation='horizontal', pad=0.15, aspect=45, label='$H_{sig}$ (m)')
 
-    if False:
-        plt.tight_layout()
-        savePath =  os.path.join('..', 'figures', 'response', 'hysteresis_case_' + cvCaseNum.__str__() + '.pdf')
+    if savebool:
+        savePath =  os.path.join('.', 'figures', 'response', 'hysteresis_case_' + case + '.pdf')
         os.makedirs(os.path.dirname(savePath), exist_ok=True)
-        plt.savefig(savePath, dpi=600)
+        plt.savefig(savePath, bbox_extra_artists=(txt, txt_prc,), bbox_inches='tight', dpi=600)
+        plt.savefig(savePath.replace('.pdf','.png'), bbox_extra_artists=(txt, txt_prc,), bbox_inches='tight', dpi=600)
 
 ################################################################################
 ################################################################################
@@ -238,7 +370,7 @@ def tsplot(ax, data,prc,**kw):
     ax.plot(x,est,**kw,label='_nolegend_')
     ax.margins(x=0)
 
-def plot_errorwindow_analysis(dataOut):
+def plot_errorwindow_analysis(dataOut, savebool=False):
     sns.set_context("poster")
     #sns.set(font_scale=1.8)
     sns.set_style("ticks",{'axes.grid': True})
@@ -287,7 +419,7 @@ def plot_errorwindow_analysis(dataOut):
     ax2.set_ylabel('Mean Residual (m)\nwith 95% confidence')
     ax2.set_ylim(-35,35)
 
-    ax2.legend(
+    lgd = ax2.legend(
         loc=6, labels=dataOut.query('site=="narra"')['case'].unique(),
         bbox_to_anchor=(1.0,1.25),
     )
@@ -299,12 +431,18 @@ def plot_errorwindow_analysis(dataOut):
     ax2.text(-0.05, 1.2, 'b)', transform=ax2.transAxes, va='top', fontweight='bold')
     plt.subplots_adjust(hspace=0.5)
 
-    savePath =  os.path.join(
-        '.', 'figures', 'forecast_error',
-        'forecast_error_base_nohist.pdf'
-    )
-    os.makedirs(os.path.dirname(savePath), exist_ok=True)
-    plt.savefig(savePath)
+    if savebool:
+        savePath =  os.path.join(
+            '.', 'figures', 'forecast_error',
+            'forecast_error_base_nohist.pdf'
+        )
+        os.makedirs(os.path.dirname(savePath), exist_ok=True)
+        plt.savefig(
+            savePath, bbox_extra_artists=(lgd,txt), bbox_inches='tight', dpi=600
+        )
+        plt.savefig(
+            savePath.replace('.pdf','.png'), bbox_extra_artists=(lgd,txt), bbox_inches='tight', dpi=600
+        )
 
 ################################################################################
 ################################################################################
