@@ -16,8 +16,10 @@ def main():
         # 'config': os.path.join('.','config','narra_base_config.json'),
         # # Narrabeen nohist
         # 'config': os.path.join('.','config','narra_nohist_config.json'),
-        # Narrabeen ar1test
-        'config': os.path.join('.','config','narra_ar1test_config.json'),
+        # # Narrabeen ar1test
+        # 'config': os.path.join('.','config','narra_ar1test_config.json'),
+        # Narrabeen datareq
+        'config': os.path.join('.','config','narra_datareq_config.json'),
         # # Tairua base
         # 'config': os.path.join('.','config','tairua_base_config.json'),
         # # Tairua nohist

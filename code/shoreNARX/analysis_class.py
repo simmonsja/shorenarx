@@ -63,11 +63,20 @@ class TrainingClass:
                            [2,2,1,2,2],
                            [2,2,2,1,2],
                            [2,2,2,2,1]]
+        self.dataReq = None
         self.testEpochs = 50
 
         # now if there is a configuration to be had, we will have it
         self.config = self.load_config(kwargs.get('config', {}))
         self.optConfig = self.load_config(kwargs.get('optConfig', {}))
+
+        # generate dataReq if required
+        if not self.dataReq is None:
+            self.trainCombs = self.trainCombsGenerate(
+                self.dataReq[0],
+                self.dataReq[1],
+                rs=kwargs.get('seed',1)
+            )
 
     ################################################################################
     ################################################################################
@@ -330,10 +339,10 @@ class TrainingClass:
     ################################################################################
     ################################################################################
  
-    def trainCombsGenerate(num,valNum,rs=1):
+    def trainCombsGenerate(self,num,valNum,rs=1):
         nck = int(num/valNum)
         #nck = int(sp.special.comb(num,chooseNum)/(num/chooseNum))
-        keepNum = np.arange(5,81,5)
+        keepNum = np.arange(10,81,10)
         # how many of the cv divisions
         keepInt = [int(_) for _ in num*keepNum/100]
         listLen = int(nck * keepInt.__len__())
@@ -595,7 +604,7 @@ def define_cv_run(nTrials,trainingSettings,nStart=0):
         for ii in np.arange(nTrials):
             printNum =  nStart + num*nTrials+ii
             print('Beginning Run {}'.format(printNum))
-            trainObj = TrainingClass(**trainingSettings)
+            trainObj = TrainingClass(seed=num,**trainingSettings)
             # train as per config
             trainObj.config['runNum'] = printNum
             trainObj.config['verbose'] = False
