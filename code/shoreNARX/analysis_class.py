@@ -166,10 +166,11 @@ class TrainingClass:
             'ar1': self.config.get('ar1', False),
             'seed': 2022 + self.config.get('runNum',0) 
         }
-        if self.dataReq:
-            cvData = self.cv_ttsplit(self.trainCombs[cvFold], bSize=modelSettings['batchSize'])
-        else:
-            cvData = self.cv_ttsplit(self.trainCombs[cvFold])
+        # removed 15/04 before running dataReq runs
+        # if self.dataReq:
+        #     cvData = self.cv_ttsplit(self.trainCombs[cvFold], bSize=modelSettings['batchSize'])
+        # else:
+        cvData = self.cv_ttsplit(self.trainCombs[cvFold])
         
         # Given data, initiate a model class with embedded model and train
         self.model  = ShorelineMLModel(cvData,**modelSettings)
@@ -236,10 +237,11 @@ class TrainingClass:
     ################################################################################
    
     def cv_Instance(self,ttComb, settings={}):
-        if self.dataReq:
-            cvData = self.cv_ttsplit(ttComb, bSize=settings['batchSize'])
-        else:
-            cvData = self.cv_ttsplit(ttComb)
+        # removed 15/04 before running dataReq runs
+        # if self.dataReq:
+        #     cvData = self.cv_ttsplit(ttComb, bSize=settings['batchSize'])
+        # else:
+        cvData = self.cv_ttsplit(ttComb)
         
         # Given data, initiate a model class with embedded model and train
         shorelineModel = ShorelineMLModel(cvData,**settings)

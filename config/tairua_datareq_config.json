@@ -1,0 +1,23 @@
+{
+    "site": "tairua",
+    "saveClass": "data_req_CV",
+    "saveVersion": "v01",
+    "xSample": "3H",
+    "ySample": "3D",
+    "inputVars": ["Hsig","Tp","Wdir","WL_mean"],
+    "addVars": ["add_shl"],
+    "yStd": ["shl_std"],
+    "yVars": ["Shoreline"],
+    "dataReq":[10,2],
+    "peakBool": 0,
+    "histBool": 1,
+    "numLayers": 3,
+    "sizeFac": 200,
+    "dropoutRate": 0.25,
+    "learningRate": 0.00093,
+    "learningDecay": 0.0255,
+    "scalerType": "standard",
+    "batchSize": 16,
+    "epochs": 1000,
+    "recordLen": 1241
+}

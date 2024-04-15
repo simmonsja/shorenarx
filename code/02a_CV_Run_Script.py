@@ -26,6 +26,8 @@ def main():
         # 'config': os.path.join('.','config','tairua_nohist_config.json'),
         # # Tairua ar1test
         # 'config': os.path.join('.','config','tairua_ar1test_config.json'),
+        # # Tairua datareq
+        # 'config': os.path.join('.','config','tairua_datareq_config.json'),
     }
 
     run_trial_subset = define_cv_run(nEnsembleMembers, trainingSettings, nStart=0)
