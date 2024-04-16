@@ -66,6 +66,9 @@ class TrainingClass:
         self.dataReq = None
         self.testEpochs = 50
 
+        self.satperc = None
+        self.satnoise = None
+
         # now if there is a configuration to be had, we will have it
         self.config = self.load_config(kwargs.get('config', {}))
         self.optConfig = self.load_config(kwargs.get('optConfig', {}))
@@ -253,6 +256,22 @@ class TrainingClass:
         shorelineModel.testX = shorelineModel.transform_data(
             cvData['testX'])
 
+        # apply satellite test settings if needed (remove data or add noise)
+        if settings.get('satperc',None):
+            # modify data from training only - remove data
+            # decided against random as the gaps are far too long
+            # inds_nan = np.random.choice(np.arange(shorelineModel.trainY.shape[0]),int((1-settings['satperc'])*shorelineModel.trainY.shape[0]),replace=False)
+            # inds_nan.sort()
+            # remove data evenly
+            inds_nan = np.ones_like(shorelineModel.trainY)
+            inds_nan[::int(1/settings['satperc'])] = 0
+            inds_nan = inds_nan.astype(bool)
+            shorelineModel.trainY[inds_nan] = np.nan
+        if settings.get('satnoise',None):
+            # modify data from training only - add gaussian noise
+            if settings['satnoise'] > 0:
+                shorelineModel.trainY = shorelineModel.trainY + np.random.normal(0,settings['satnoise'],shorelineModel.trainY.shape)
+
         # train the model
         shorelineModel.initialise_model(**settings)
         model, bestEpoch, trainStats = shorelineModel.train(**settings)
@@ -399,6 +418,8 @@ class TrainingClass:
             'verbose': self.config.get('verbose', True),
             'hist': self.histBool,
             'ar1': self.config.get('ar1', False),
+            'satperc': self.config.get('satperc',None),
+            'satnoise': self.config.get('satnoise',None),
             'seed': 2022 + self.config.get('runNum',0) 
         }
 

@@ -535,6 +535,12 @@ def plot_compare_datareq(storeDF_in, savebool=False, showfliers=False):
             alpha=0.75
         )
 
+    # add a) b) in top left
+    txt = ax1.text(-0.175, 1.1, 'a)',
+        transform=ax1.transAxes, va='top', fontweight='bold')
+    ax2.text(-0.175, 1.1, 'b)',
+        transform=ax2.transAxes, va='top', fontweight='bold')
+    
     # turn on x and y grid
     ax1.set_ylabel('Test NMSE', labelpad=10)
     ax2.set_ylabel('Test R$^2$', labelpad=10)
@@ -548,7 +554,7 @@ def plot_compare_datareq(storeDF_in, savebool=False, showfliers=False):
             '.','figures','data_requirements', 'data_requirements_compare_bysite.pdf'
         )
         os.makedirs(os.path.dirname(savePath), exist_ok=True)
-        plt.savefig(savePath, bbox_inches='tight', dpi=600)
+        plt.savefig(savePath, bbox_extra_artists=(txt,), bbox_inches='tight', dpi=600)
         plt.savefig(savePath.replace('.pdf','.png'), bbox_inches='tight', dpi=600)
 
     return

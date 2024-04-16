@@ -1,0 +1,31 @@
+{
+    "site": "tairua",
+    "saveClass": "base_CV",
+    "saveVersion": "v01",
+    "xSample": "3H",
+    "ySample": "3D",
+    "inputVars": ["Hsig","Tp","Wdir","WL_mean"],
+    "addVars": ["add_shl"],
+    "yStd": ["shl_std"],
+    "yVars": ["Shoreline"],
+    "trainCombs":[
+        [1,2,2,2,2],
+        [2,1,2,2,2],
+        [2,2,1,2,2],
+        [2,2,2,1,2],
+        [2,2,2,2,1]
+    ],
+    "satperc": 0.2,
+    "satnoise": 7.3,
+    "peakBool": 0,
+    "histBool": 1,
+    "numLayers": 3,
+    "sizeFac": 200,
+    "dropoutRate": 0.25,
+    "learningRate": 0.00093,
+    "learningDecay": 0.0255,
+    "scalerType": "standard",
+    "batchSize": 16,
+    "epochs": 1000,
+    "recordLen": 1241
+}
