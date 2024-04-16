@@ -471,3 +471,159 @@ def plot_errorwindow_analysis(dataOut, savebool=False):
 
 ################################################################################
 ################################################################################
+
+###############################################################################
+################################################################################
+# Data requirements analysis
+################################################################################
+################################################################################
+
+
+def plot_compare_datareq(storeDF_in, savebool=False, showfliers=False):
+    """
+    This function creates a boxplot  to compare the performance of different model with various levels of input data.
+
+    Parameters:
+    storeDF_in (pandas.DataFrame): The input dataframe containing the data to be plotted. It should have columns 'perc', 'site', 'testR2' and 'testRMSE'.
+    showfliers (bool, optional): A flag to determine whether to show the fliers in the boxplot or not. Default is False.
+    savebool (bool, optional): A flag to determine whether to save the plot or not. If True, the plot is saved.
+
+    Returns:
+    None
+
+    """
+    # boxplot of nohist vs base per fold per site
+    sns.set_context("talk")
+    sns.set_style("ticks",{'axes.grid': True,})
+    fig = plt.figure(figsize=(6,8))
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
+    palette = 'tab10'
+
+    storeDF = storeDF_in.copy().sort_values(by='perc')
+    storeDF['perc'] = storeDF['perc'].astype(np.int64)
+    storeDF['site'] = storeDF['site'].replace({'narra':'Narrabeen','tairua':'Tairua'})
+
+    sns.boxplot(
+        data=storeDF,
+        x='perc',y='testNMSE',hue='site',ax=ax1,
+        palette=palette, showfliers=showfliers,
+        boxprops=dict(alpha=0.5)
+    )
+
+    sns.boxplot(
+        data=storeDF,
+        x='perc',y='testR2',hue='site',ax=ax2,
+        palette=palette, showfliers=showfliers,
+        boxprops=dict(alpha=0.5)
+    )
+
+    # for both axes draw a dashed hline (colour per site) at the median value of the 80%
+    for ii, this_site in enumerate(storeDF['site'].unique()):
+        median_val = storeDF.query('site=="{}" and perc==80'.format(this_site))['testNMSE'].median()
+        ax1.axhline(
+            median_val, 
+            linestyle='--', color='C{}'.format(ii),
+            linewidth=1,
+            alpha=0.75
+        )
+        median_val = storeDF.query('site=="{}" and perc==80'.format(this_site))['testR2'].median()
+        ax2.axhline(
+            median_val,
+            linestyle='--', color='C{}'.format(ii),
+            linewidth=1,
+            alpha=0.75
+        )
+
+    # turn on x and y grid
+    ax1.set_ylabel('Test NMSE', labelpad=10)
+    ax2.set_ylabel('Test R$^2$', labelpad=10)
+    ax2.set_xlabel('Percentage of data used in training', labelpad=10)
+    ax1.set_xlabel('')
+    ax1.get_legend().remove()
+    ax2.legend(loc=6, bbox_to_anchor=(1.025,1.075), title='Case')
+
+    if savebool:
+        savePath =  os.path.join(
+            '.','figures','data_requirements', 'data_requirements_compare_bysite.pdf'
+        )
+        os.makedirs(os.path.dirname(savePath), exist_ok=True)
+        plt.savefig(savePath, bbox_inches='tight', dpi=600)
+        plt.savefig(savePath.replace('.pdf','.png'), bbox_inches='tight', dpi=600)
+
+    return
+
+################################################################################
+################################################################################
+
+
+def plot_compare_sattest(storeDF_in, savebool=False):
+    """
+    This function creates a boxplot  to compare the performance of different model with various levels of input data.
+
+    Parameters:
+    storeDF_in (pandas.DataFrame): The input dataframe containing the data to be plotted. It should have columns 'perc', 'site', 'testR2' and 'testRMSE'.
+    savebool (bool, optional): A flag to determine whether to save the plot or not. If True, the plot is saved.
+
+    Returns:
+    None
+
+    """
+    # boxplot of nohist vs base per fold per site
+    sns.set_context("talk")
+    sns.set_style("ticks",{'axes.grid': True,})
+    fig = plt.figure(figsize=(6,8))
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
+    palette = 'tab10'
+
+    storeDF = storeDF_in.copy().sort_values(by='perc')
+    storeDF['perc'] = storeDF['perc'].astype(np.int64)
+    storeDF['site'] = storeDF['site'].replace({'narra':'Narrabeen','tairua':'Tairua'})
+
+    sns.boxplot(
+        data=storeDF,
+        x='perc',y='testNMSE',hue='site',ax=ax1,
+        palette=palette, showfliers=showfliers,
+        boxprops=dict(alpha=0.5)
+    )
+
+    sns.boxplot(
+        data=storeDF,
+        x='perc',y='testR2',hue='site',ax=ax2,
+        palette=palette, showfliers=showfliers,
+        boxprops=dict(alpha=0.5)
+    )
+
+    # turn on x and y grid
+    ax1.set_ylabel('Test NMSE', labelpad=10)
+    ax2.set_ylabel('Test R$^2$', labelpad=10)
+    ax2.set_xlabel('Percentage of data used in training', labelpad=10)
+    ax1.set_xlabel('')
+    ax1.get_legend().remove()
+    ax2.legend(loc=6, bbox_to_anchor=(1.025,1.075), title='Case')
+
+    if savebool:
+        savePath =  os.path.join(
+            '.','figures','data_requirements', 'data_requirements_compare_bysite.pdf'
+        )
+        os.makedirs(os.path.dirname(savePath), exist_ok=True)
+        plt.savefig(savePath, bbox_inches='tight', dpi=600)
+        plt.savefig(savePath.replace('.pdf','.png'), bbox_inches='tight', dpi=600)
+
+    return
+
+################################################################################
+################################################################################
+
+
+################################################################################
+################################################################################
+
+
+################################################################################
+################################################################################
+
+
+################################################################################
+################################################################################
