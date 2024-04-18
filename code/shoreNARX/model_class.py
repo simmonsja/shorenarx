@@ -1,17 +1,12 @@
 import math
-import os
-import time
 
 import numpy as np
 import pandas as pd
 import copy
 import scipy
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from sklearn.metrics import mean_squared_error, r2_score
 from torch.autograd import Variable
-from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader, TensorDataset
 
 from .models import NARX_NN
@@ -28,19 +23,62 @@ seed = 2022
 ################################################################################
 
 class ShorelineMLModel:
+    """
+    A class containing the shoreline NARX model and the methods to train and 
+    predict with it.
+
+    Attributes:
+        cvData: The cross-validation data used to initialize the model.
+        model: The machine learning model.
+        scalerX: The scaler for input data.
+        scalerY: The scaler for output data.
+        verbose: The verbosity level.
+        settings: Additional settings for the model (see Readme.md for details)
+
+    Methods:
+        __init__: Initializes the ShorelineMLModel object.
+        initialise_model: Initializes the machine learning model.
+        train: Trains the machine learning model.
+        predict: Makes predictions using the trained model.
+        calc_performance: Calculates the performance metrics.
+        fit_scalers: Fits the scalers for input and output data.
+    """
+
     def __init__(self, cvData, **kwargs):
+        """
+        Initializes the ShorelineMLModel object.
+
+        Args:
+            cvData: The cross-validation data used to initialize the model.
+            **kwargs: Additional keyword arguments for the model.
+
+        Returns:
+            None
+        """
         # set attrs from cvData
         self.__dict__ = cvData
         self.model = None
         self.scalerX = None
         self.scalerY = None
-        self.verbose = kwargs.get('verbose',1)
+        self.verbose = kwargs.get('verbose', 1)
         self.settings = kwargs
 
     ################################################################################
     ################################################################################
 
     def initialise_model(self, **settings):
+        """
+        Initializes the model with the given settings and stores as self.model.
+
+        Parameters:
+        - settings (dict): A dictionary containing the following keys:
+            - numLayers (int): The number of layers in the model.
+            - layerSize (int): The size of each layer in the model.
+            - dropoutRate (float): The dropout rate for the model.
+
+        Returns:
+        None
+        """
         self.model = NARX_NN(self.trainX.shape[1], settings['numLayers'], settings['layerSize'], settings['dropoutRate'])
         
     ################################################################################
@@ -49,10 +87,12 @@ class ShorelineMLModel:
     def train(self, **settings):
         '''
         Create and train the model.
-        inputs:
-            - data_in: data with trainX, trainY, test etc.
-            - norm_convert: scikit normaliser fitted to test data
-            - settings
+
+        Args:
+            settings (dict): Dictionary containing the training settings.
+
+        Returns:
+            tuple: A tuple containing the trained model, the best model and its performance metrics, and an array of statistics.
         '''
         np.random.seed(settings.get('seed',seed))
         torch.manual_seed(settings.get('seed',seed))
@@ -66,7 +106,6 @@ class ShorelineMLModel:
         model = model.train()
         #set loss function for training
         loss_fn = torch.nn.MSELoss()
-        #loss_fn = NMSELoss()
 
         # define optimization algorithm
         lr = settings['learningRate']
@@ -205,7 +244,7 @@ class ShorelineMLModel:
             self.trainAdd[0],
             **settings
         )
- 
+
         bestOut['trainpredy'] = trainpredy
         bestOut['trainLoss'] = trainLoss
         bestOut['valLoss'] = testNMSE
@@ -216,12 +255,24 @@ class ShorelineMLModel:
 
     def predict(self, modelsin, testX, addX, **settings):
         '''
-        Predict with existing model
+        Predict with an existing model - this prediction is always done from the intial 
+        previous shoreline position and the model predicted shoreline position is used 
+        as an input for the next prediction.
+
+        Parameters:
+        - modelsin: The trained model to use for prediction.
+        - testX: The input data for prediction.
+        - addX: Additional input data for prediction.
+        - settings: Additional settings for prediction.
+
+        Returns:
+        - truepred: The predicted output.
+
         '''
-        #do some calcs for the stepping
-        if settings.get('hist',True) or settings.get('ar1', False):
+        # do some calcs for the stepping
+        if settings.get('hist', True) or settings.get('ar1', False):
             repNum = testX.shape[-1]
-            dummyNorm = np.zeros((testX.shape[1],1))
+            dummyNorm = np.zeros((testX.shape[1], 1))
 
         testX = torch.Tensor(testX)
         model = modelsin.eval()
@@ -229,21 +280,21 @@ class ShorelineMLModel:
         prevx = Variable(torch.tensor(addX).float())
         predlist = []
         num = 0
-        if settings.get('hist',True) or settings.get('ar1', False):
+        if settings.get('hist', True) or settings.get('ar1', False):
             for thisx in testX:
                 newx = self.pytorch_norm_data(dummyNorm, prevx)
-                pred = model(torch.cat((thisx[:-1],torch.Tensor(newx[-1])),dim=0))  
+                pred = model(torch.cat((thisx[:-1], torch.Tensor(newx[-1])), dim=0))
 
-                if settings.get('dx',True):
-                    pred = torch.add(pred,prevx)
+                if settings.get('dx', True):
+                    pred = torch.add(pred, prevx)
 
                 predlist.append(pred)
                 prevx = pred
             truepred = torch.cat(predlist)
         else:
-            pred = model(torch.unsqueeze(testX,0)).squeeze()
-            if settings.get('dx',True):
-                truepred = torch.add(torch.cumsum(pred,0).squeeze(),prevx)
+            pred = model(torch.unsqueeze(testX, 0)).squeeze()
+            if settings.get('dx', True):
+                truepred = torch.add(torch.cumsum(pred, 0).squeeze(), prevx)
             else:
                 truepred = pred
 
@@ -270,7 +321,16 @@ class ShorelineMLModel:
     ################################################################################
 
     def fit_scaler(self, fitData, sctype='stand'):
-        '''Scaler type for X and Y'''
+        '''
+        Fits a scaler to the given data.
+
+        Parameters:
+            fitData (numpy.ndarray): The data to fit the scaler on.
+            sctype (str): The type of scaler to use. Options are 'minmax', 'standard', or None.
+
+        Returns:
+            sklearn.preprocessing object: The fitted scaler object.
+        '''
         if sctype == 'minmax':
             myScaler = MinMaxScaler(copy=True, feature_range=(0, 1))
         elif sctype == 'standard':
@@ -322,6 +382,20 @@ class ShorelineMLModel:
 ################################################################################
 
 def calc_performance_(predY, obsY):
+    """
+    Calculate performance metrics for predicted and observed values.
+
+    Parameters:
+    predY (array-like or DataFrame): Predicted values.
+    obsY (array-like or DataFrame): Observed values.
+
+    Returns:
+    outRMSE (float): Root Mean Squared Error.
+    outNMSE (float): Normalized Mean Squared Error.
+    outR (float): Correlation coefficient.
+    outR2 (float): Coefficient of determination.
+
+    """
     if isinstance(predY, pd.DataFrame):
         thisPred = predY.values
         thisObs = obsY.values

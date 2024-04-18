@@ -1,17 +1,19 @@
 # Code to accompany "Data-driven shoreline modelling at timescales of days to years"
-Joshua Simmons 2024
+Joshua Simmons and Kristen Splinter 2024
 
 This repository contains the code to reproduce the figures in the publication "Data-driven shoreline modelling at timescales of days to years" by Simmons and Splinter (2024). The code is written in Python and uses the pytorch library to train a neural network to predict the shoreline position at timescales of days to years.
 
 # Notebooks
 
-- `01_Publication_Optuna_Analysis.ipynb`: Analysis of the Optuna hyperparameter search to find appropriate settings for the predictive model.
+- `01a_Publication_Optuna_Analysis.ipynb`: Narrabeen analysis of the Optuna hyperparameter search to find appropriate settings for the predictive model.
+- `01b_Publication_Optuna_Analysis.ipynb`: Tairua analysis of the Optuna hyperparameter search to find appropriate settings for the predictive model.
 - `02_Model_Training_Example.ipynb`: Example of how to train the model using the optimal hyperparameters found in the previous notebook.
 - `03_Publication_Model_Performance.ipynb`: Analysis of the model performance and various tests. This notebook is the main notebook to reproduce the figures in the publication.
+- `04_Publication_Data_Requirements.ipynb`: Specific analysis of data requirements aspects of the model. This produces additional figures used in the publication.
 
 ## Scripts
 
-- `01a_Optuna_Run_Script.py`: Script to run the Optuna hyperparameter search given a config file.
+- `01_Optuna_Run_Script.py`: Script to run the Optuna hyperparameter search given a config file.
 - `02a_CV_Run_Script.py`: Script to train the model given a config file.
 
 
