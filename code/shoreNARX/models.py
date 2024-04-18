@@ -1,7 +1,4 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 import numpy as np
 from  collections import OrderedDict
 
@@ -12,6 +9,15 @@ def NARX_NN(inputsNum, layers, layerSize, dropout):
     '''
     Simple nn model with variable initial layer size and number of layers.
     Halves the number of neurons each layer with min layer size of 12
+    
+    Parameters:
+    - inputsNum (int): Number of input features.
+    - layers (int): Number of hidden layers.
+    - layerSize (int): Initial size of the hidden layers.
+    - dropout (float): Dropout rate for regularization.
+    
+    Returns:
+    - nn.Sequential: Sequential neural network model.
     '''
     #setup the layers
     layerList = []

@@ -22,10 +22,50 @@ import json
 ################################################################################
 
 class TrainingClass:
-    '''
-    Class for training the shoreline NARX NN model.
-    '''
+    """
+    A class that serves as a wrapper for the model to:
+        - Load data
+        - Prepare and transform data
+        - Setup or restore model
+        - Perform cross-validation
+
+    This underpins most of the analysis undertaken in this study
+
+    Methods:
+        __init__(self, *args, **kwargs): Initializes the TrainingClass object.
+        load_config(self, configFile): Loads the parameters into the class.
+        load_data(self): Loads the data into the class.
+        load_cv_test(self): Loads the CV data into self.cvData.
+        restore_model(self, runNum, cvFold): Loads the model into self.model.
+        create_XY(self): Creates X and Y from data.
+        makeCVdata(self, splitNum): Splits all data into folds.
+        cv_Instance(self, ttComb, settings={}): Performs cross-validation on the given data.
+
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Initializes an instance of the AnalysisClass.
+
+        Args:
+            baseDir (str): The base directory for the analysis. Defaults to '.'.
+            site (str): The site for the analysis. Defaults to 'narra'.
+            xSample (str): The sample frequency for the input variables. Defaults to '6H'.
+            ySample (str): The sample frequency for the output variable. Defaults to '1D'.
+            inputVars (list): The list of input variables. Defaults to ['Hsig', 'Tp', 'Wdir', 'WL_mean'].
+            addVars (list): The list of variables to be used as the initial previous shoreline value. Defaults to ['add_shl'].
+            yStd (list): The list of variables to hold the standard deviation y. Defaults to ['shl_std'].
+            yVars (list): The list of output variables. Defaults to ['Shoreline'].
+            peakBool (bool): Whether to include mean and peak over xSample. Defaults to False.
+            histBool (bool): Whether to use autoregressive NARX structure. Defaults to True.
+            ar1 (bool): Whether to train with observed previous shoreline data and run with autoregression. Defaults to False.
+            trainCombs (list): The list of train/test combinations for CV train split. Defaults to [[1,2,2,2,2], [2,1,2,2,2], [2,2,1,2,2], [2,2,2,1,2], [2,2,2,2,1]].
+            dataReq (None or tuple): The data requirements settings which modify trainCombs. Defaults to None.
+            testEpochs (int): The number of epochs for testing. Defaults to 50.
+            satperc (None or float): The percentage of data to cut to in the satellite sensitivity test. Defaults to None.
+            satnoise (None or float): The noise to add in the satellite sensitivity test. Defaults to None.
+            config (dict): The configuration dictionary from the config file.
+            optConfig (dict): The optimization configuration dictionary from the config file. 
+        """
         # self.__dict__.update(kwargs)
         self.baseDir = kwargs.get('baseDir', '.')
 
@@ -85,7 +125,7 @@ class TrainingClass:
     ################################################################################
 
     def load_config(self, configFile):
-        ''' Load params into class '''
+        ''' Load params from config file into class '''
         # read in or copy the config
         if not isinstance(configFile,dict):
             with open(configFile) as f:
@@ -106,7 +146,7 @@ class TrainingClass:
     ################################################################################
 
     def load_data(self):
-        ''' Load data into class.data '''
+        ''' Load data into self.data '''
         dataPath = os.path.join(
             self.baseDir, 'input_data', 'processed',
             '{}_xsmpl_{}_ysmpl_{}.csv'.format(self.site,self.xSample,self.ySample)
@@ -120,7 +160,7 @@ class TrainingClass:
     ################################################################################
 
     def load_cv_test(self):
-        ''' Load CV data into self.cvData '''
+        ''' Load CV data after a model has been run (for plotting and analysis) '''
         savePath = os.path.join(
             self.baseDir,'results','models',
             'case_' + self.config['saveClass'], 
@@ -153,7 +193,16 @@ class TrainingClass:
     ################################################################################
     
     def restore_model(self,runNum,cvFold):
-        ''' Load model into self.model '''
+        """
+        Restores a trained model from the specified run and cross-validation fold.
+
+        Args:
+            runNum (int): The run number of the trained model.
+            cvFold (int): The cross-validation fold of the trained model.
+
+        Returns:
+            None
+        """
         modelSettings = {
             'numLayers': self.config['numLayers'],
             'layerSize': self.config['sizeFac'],
@@ -190,7 +239,7 @@ class TrainingClass:
     ################################################################################
 
     def create_XY(self):
-        ''' Create X and Y from data '''
+        ''' Create inputs/outputs (X and Y) from data '''
         self.inputY = reduce_to_vars(self.data, self.yVars+self.yStd+self.addVars)
         myInputVars = self.inputVars
         if self.histBool:
@@ -206,15 +255,20 @@ class TrainingClass:
     ################################################################################
 
     def makeCVdata(self,splitNum):
-        # split all data into folds
+        """
+        Generate cross-validation data.
 
-        # Inputs:
-        #   mlData     : short term model component data
-        #   vars       : dict containing - 'inputVars', 'addVars' and 'yVars'
-        #   split      : split decimal
-        #
-        # Outputs:
-        #   out        : dict object containing the split train and test data as X/Y
+        Parameters:
+        - splitNum (int): The number of splits to create.
+
+        Returns:
+        - out (list): A list of dictionaries, where each dictionary contains the following keys:
+            - 'X': The input X data for the fold.
+            - 'Y': The target Y data for the fold.
+            - 'Add': Add (previous shoreline) data for the fold.
+            - 'Y_std' (optional): The standard deviation of the target Y data for the fold.
+            - 'Index': The index of the data for the fold (time).
+        """
         cvSize = int(np.floor(self.inputY.shape[0]/splitNum))
 
         out = []
@@ -240,6 +294,16 @@ class TrainingClass:
     ################################################################################
    
     def cv_Instance(self,ttComb, settings={}):
+        """
+        Perform a single CV run on given data and train a shoreline model.
+
+        Parameters:
+        - ttComb (list/tuple): A list containing the train-test split indices. A value of 1 indicates the test set and a value of 2 indicates the train set. e.g., [2,2,2,2,1]
+        - settings (dict): Settings for the shoreline model.
+
+        Returns:
+        - df_testingdata (dict): A dictionary containing the testing data, model information, and evaluation metrics.
+        """        
         # removed 15/04 before running dataReq runs
         # if self.dataReq:
         #     cvData = self.cv_ttsplit(ttComb, bSize=settings['batchSize'])
@@ -322,13 +386,16 @@ class TrainingClass:
     ################################################################################
 
     def cv_ttsplit(self, ttbool, bSize=0):
-        # this function concatenates data for input with arbitrary keys and names
-        # correctly.
-        # input:
-        #   - datain = a list of dicts with train/test data
-        #   - ttbool = 1 where test data, 2 where train data
+        """
+        Splits the data into train and test sets for a given CV fold.
 
-        #compress and merge the data
+        Args:
+            ttbool (list): 1 for test data, 2 for train data. e.g., [2,2,2,2,1]
+            bSize (int, optional): unused relic.
+
+        Returns:
+            dict: A dictionary containing the train and test data.
+        """
         trainData = list(itertools.compress(self.cvData, [_ == 2 for _ in ttbool]))
         if bSize > 0:
             trainDataNew = []
@@ -361,6 +428,17 @@ class TrainingClass:
     ################################################################################
  
     def trainCombsGenerate(self,num,valNum,rs=1):
+        """
+        Generates combinations of training and validation sets for cross-validation.
+
+        Args:
+            num (int): The total number of sets.
+            valNum (int): The number of sets used for validation.
+            rs (int, optional): Random seed for reproducibility. Defaults to 1.
+
+        Returns:
+            numpy.ndarray: An array of shape (listLen, num) containing the generated combinations.
+        """
         nck = int(num/valNum)
         #nck = int(sp.special.comb(num,chooseNum)/(num/chooseNum))
         keepNum = np.arange(10,81,10)
@@ -391,6 +469,15 @@ class TrainingClass:
     # Training end function
 
     def training_wrapper(self, saveBool=False):
+        """
+        Wrapper method for training the model this performs X-fold cross-validation.
+
+        Args:
+            saveBool (bool, optional): Indicates whether to save the trained model. Defaults to False.
+
+        Returns:
+            float: Mean of the best test RMSE values obtained from cross-validation runs.
+        """
         # first load the data
         self.load_data()
         #gather the X and Y for this case
@@ -450,8 +537,19 @@ class TrainingClass:
     ################################################################################
     # Grid Search
 
-    def gs_objective(self,trial):
-        # Optimisation Goalss
+    def gs_objective(self, trial):
+        """
+        This method defines the objective function for the optimization process (optuna).
+        It sets the optimization goals for data parameters and network architecture,
+        and then runs through the cv_Instance to calculate the test RMSE.
+
+        Parameters:
+            trial (optuna.Trial): The trial object used for hyperparameter optimization.
+
+        Returns:
+            float: The mean of the minimum test RMSE values obtained from running cv_Instance.
+        """
+        # Optimisation Goals
         # data params
         xSample_ = self.optConfig.get('xSample',['3H','6H','12H','1D'])
         if isinstance(xSample_,list):
@@ -641,6 +739,7 @@ def define_cv_run(nTrials,trainingSettings,nStart=0):
 ################################################################################
 
 def reduce_to_vars(inData,vars):
+    '''helper function to reduce data to only the variables of interest'''
     boolsOut = np.full(inData.columns.shape, False)
     for thisVar in vars:
         thisBools = [ii for ii, _ in enumerate(inData.columns.tolist()) if _.startswith(thisVar)]
