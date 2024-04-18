@@ -8,114 +8,19 @@ import os
 ################################################################################
 ################################################################################
 
-def plot_CV_output(datain,stats,num,fold,cvNum=None,savefig=False):
-    np.warnings.filterwarnings('ignore')
-
-    #python indexing
-    num = num - 1
-    fold = fold - 1
-
-    sns.set_context("poster")
-    sns.set_style("ticks",{'axes.grid': True})
-
-    fig = plt.figure(figsize=(14,8))
-    ax1 = fig.add_subplot(111)
-
-    data = datain[num][fold].copy()
-
-    fillDates = pd.date_range(data['train']['modY'].index[0],data['train']['modY'].index[-1],freq=pd.infer_freq(data['train']['modY'].index[0:5]))
-    trainMod = data['train']['modY'].reindex(fillDates).copy()
-    #data['train']['obsY'] = data['train']['obsY'].fillna(value=np.ma.masked)
-
-    sns.set(font_scale=2.2)
-    sns.set_style("ticks")
-
-    if any(data['train']['obsY'].index):
-        ax1.errorbar(data['train']['obsY'].index,
-                     data['train']['obsY'].values,
-                     yerr=data['train']['stdY'].values,
-                     marker='s',
-                     mfc='gray',
-                     mec='gray',
-                     ms=5,
-                     elinewidth=1,
-                     fmt='.',
-                     ecolor=[0.7,0.7,0.7,0.4],
-                     capsize=2,
-                     zorder=1,)
-        trainObs = data['train']['obsY'].rolling(window=5,center=True,min_periods=3).mean().copy()
-        trainObs = trainObs.reindex(fillDates)
-        ax1.plot(trainObs.index,
-                 np.ma.masked_where(np.isnan(trainObs.values), trainObs.values),
-                 'black',
-                 linewidth=1.5,
-                 zorder=2,
-                 label='Measured (moving mean)')
-        ax1.plot(trainMod.index,
-                 np.ma.masked_where(np.isnan(trainMod.values), trainMod.values),
-                 sns.xkcd_rgb["red"],
-                 alpha=0.9,
-                 linewidth=1.5,
-                 zorder=3,
-                 label='Training')
-    if any(data['test']['obsY'].index):
-        ax1.errorbar(data['test']['obsY'].index,
-                 data['test']['obsY'].values,
-                 yerr=data['test']['stdY'].values,
-                 marker='s',
-                 mfc='gray',
-                 mec='gray',
-                 ms=5,
-                 elinewidth=1,
-                 fmt='.',
-                 ecolor=[0.7,0.7,0.7,0.4],
-                 capsize=2,
-                 zorder=1,)
-        ax1.plot(data['test']['obsY'].index,
-                 data['test']['obsY'].rolling(window=5,center=True,min_periods=3).mean().values,
-                 'black',
-                 linewidth=1.5,
-                 zorder=2)
-        ax1.plot(data['test']['modY'].index,
-                 data['test']['modY'].values,
-                 sns.xkcd_rgb["true blue"],
-                 alpha=0.9,
-                 linewidth=1.5,
-                 zorder=3,
-                 label='Test')
-
-    ax1.set_ylabel('Shoreline Position ($m$)')
-    ax1.set_xlabel('Date')
-    if num < 25:
-        ax1.set_ylim([17.5, 92.5])
-        ax1.set_xlim(pd.Timestamp('2004-01-01'), pd.Timestamp('2016-01-01'))
-    else:
-        ax1.set_ylim([35, 85])
-        #ax1.set_ylim([20, 100])
-        ax1.set_xlim(pd.Timestamp('1998-01-01'), pd.Timestamp('2010-01-01'))
-    ax1.xaxis.set_major_locator(mdates.YearLocator(2))
-    plt.legend(loc=4, ncol=1, fontsize=22)
-    #turn warnings back on and remove from jupyter NB
-    np.warnings.filterwarnings('default')
-
-    # calcRMSE, _, _ = calc_performance(data['test']['modY'],data['test']['obsY'])
-    # plt.text(0.02,0.90,'Test RMSE: {:.2f} m'.format(calcRMSE),
-    #          fontsize=18, transform=ax1.transAxes)
-
-    if savefig:
-        plt.tight_layout()
-        num += 1
-        fold += 1
-        savePath =  os.path.join('../results/CV/figures/', 'processed', 'case_' + cvNum.__str__(),
-                                 'CVtesting_run_' + num.__str__() + '_fold_' + fold.__str__() + '.jpg')
-        os.makedirs(os.path.dirname(savePath), exist_ok=True)
-        plt.savefig(savePath, dpi=600)
-
-
-################################################################################
-################################################################################
-
 def plot_CV_ensemble(datain,fold,ax=None,savefig=False):
+    """
+    Plot ensemble results from a single fold of cross-validation.
+
+    Parameters:
+    - datain (list): List of dictionaries containing the cross-validated data.
+    - fold (int): The fold number to plot.
+    - ax (matplotlib.axes.Axes, optional): The axes to plot on. If not provided, a new figure and axes will be created.
+    - savefig (bool, optional): Whether to save the figure as an image file. Default is False.
+
+    Returns:
+    - None
+    """
     # np.warnings.filterwarnings('ignore')
     thisFoldData = [_[fold] for _ in datain]
 
@@ -242,6 +147,19 @@ def plot_CV_ensemble(datain,fold,ax=None,savefig=False):
 ################################################################################
 
 def plot_CV_ensemble_compare(modelsin ,fold, ax=None, savefig=False):
+    """
+    Plot the comparison between multiple cases of the ensemble of models for a single fold of cross-validation. Here, only the test data is plotted.
+
+    Parameters:
+    - modelsin (dict): A dictionary of ensemble models.
+    - fold (int): The fold number.
+    - ax (matplotlib.axes.Axes, optional): The axes to plot on. If not provided, a new figure and axes will be created.
+    - savefig (bool, optional): Whether to save the figure as a PDF file. Default is False.
+
+    Returns:
+    - None
+
+    """
     # np.warnings.filterwarnings('ignore')
     mod_names = list(modelsin.keys())
     thisFoldData = [[_[fold] for _ in this_model] for this_model in modelsin.values()]

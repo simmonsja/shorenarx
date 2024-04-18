@@ -153,6 +153,17 @@ def plot_compare_structure_byfold(storeDF, savebool=False):
 def plot_sensitivity_analysis(looDF, case='base', savebool=False):
     '''
     Plot the leave one out sensitivity analysis results
+
+    Parameters:
+    - looDF: DataFrame
+        The DataFrame containing the leave one out sensitivity analysis results.
+    - case: str, optional
+        The case name for the sensitivity analysis. Default is 'base'.
+    - savebool: bool, optional
+        Flag indicating whether to save the plot as a PDF and PNG file. Default is False.
+
+    Returns:
+    None
     '''
     fig = plt.figure(figsize=(14,7))
     sns.set_context("poster")
@@ -214,6 +225,18 @@ def plot_sensitivity_analysis(looDF, case='base', savebool=False):
 ################################################################################
 
 def plot_hysteresis(storeDF, case='base', savebool=False):
+    """
+    Plot analysis of model response (dx) as the previous shoreline position 
+    is varied. Aiming to show any equilibrium type behaviour.
+
+    Parameters:
+    - storeDF (DataFrame): The input data containing the hysteresis curves.
+    - case (str): The case name for the plot. Default is 'base'.
+    - savebool (bool): Whether to save the plot as a PDF file. Default is False.
+
+    Returns:
+    None
+    """
     # seaborn plot
     sns.set_context("talk")
     sns.set_style("ticks",{'axes.grid': True,})
@@ -317,72 +340,7 @@ def plot_hysteresis(storeDF, case='base', savebool=False):
 
 ################################################################################
 ################################################################################
-
-def plot_observed_hysteresis(obsStoreDF, storeDF):
-    # seaborn plot
-    adjobsStoreDF = obsStoreDF.copy()
-    plotDF = storeDF.melt(id_vars=['site','Hsig'])
-    shoreVals = plotDF['variable'].unique()
-    adjobsStoreDF['shlPos'] = np.array([shoreVals[np.argmin(abs(_-shoreVals))] for _ in obsStoreDF['shlPos'].values])
-
-    sns.set_context("talk")
-    sns.set_style("ticks",{'axes.grid': True,})
-    g = sns.lmplot(x='shlPos', y='dx',
-                col='site',
-                palette='Set1',
-                height=5, aspect=1.25,
-                markers=["x"],
-                fit_reg=False,
-                legend=False,
-                data=adjobsStoreDF,
-                scatter_kws={'s':10,'alpha':0.5})
-    ax1 = g.axes[0][0]
-    # sns.regplot(x='shlPos', y='dx', data=adjobsStoreDF[adjobsStoreDF['site']=='narra'], 
-    #             scatter=False, lowess=True, ci=None, color='r',ax=ax1)
-    sns.lineplot(x='shlPos', y='dx', data=adjobsStoreDF[adjobsStoreDF['site']=='narra'], 
-                estimator=np.median, color='r',ax=ax1)
-    ax1.set_ylim(-10,10)
-    ax1.set_xlim(-25,125)
-    ax1.set_xlabel('% of observed $x_{t-1}$ as input')
-    ax1.set_ylabel('Observed dx response (m)')
-    ax1.set_title('Narrabeen')
-    ax2 = g.axes[0][1]
-    # sns.regplot(x='shlPos', y='dx', data=adjobsStoreDF[adjobsStoreDF['site']=='tairua'], 
-    #             scatter=False, lowess=True, ci=None, color='coral',ax=ax2)
-    sns.lineplot(x='shlPos', y='dx', data=adjobsStoreDF[adjobsStoreDF['site']=='tairua'],
-                estimator=np.median, color='coral',ax=ax2)
-    ax2.set_ylim(-10,10)
-    ax2.set_xlim(-25,125)
-    ax2.set_xlabel('% of observed $x_{t-1}$ as input')
-    ax2.set_ylabel('')
-    ax2.set_title('Tairua')
-
-    sns.despine(top=False, right=False, left=False, bottom=False)
-
-################################################################################
-################################################################################
 # Error window analysis
-################################################################################
-################################################################################
-
-def plot_raw_errorwindow(dataOutMelt):
-    fig = plt.figure(figsize=(14,8))
-    ax1 = fig.add_subplot(111)
-    #style with sns
-    sns.set(font_scale=1.3)
-    sns.set_style("ticks")
-    g = sns.lineplot(x='variable', y='value',
-                    units = 'units',
-                    hue='hist',
-                    estimator=None,
-                    #estimator=np.nanmean,
-                    data=dataOutMelt,
-                    #ci=100,
-                    ax=ax1)
-    ax1.set_xlabel('days')
-    ax1.set_ylabel('MS Error')
-
-
 ################################################################################
 ################################################################################
 
@@ -396,6 +354,16 @@ def tsplot(ax, data,prc,**kw):
     ax.margins(x=0)
 
 def plot_errorwindow_analysis(dataOut, savebool=False):
+    """
+    Plots the error window analysis for the given data. This plots the residual against the forecast days for the two sites and various cases
+
+    Parameters:
+    - dataOut (DataFrame): The data containing the analysis results. Must contain columns 'site', 'case', 'units', 'variable', and 'value'.
+    - savebool (bool): Indicates whether to save the plot or not. Default is False.
+
+    Returns:
+    None
+    """
     sns.set_context("poster")
     #sns.set(font_scale=1.8)
     sns.set_style("ticks",{'axes.grid': True})
@@ -477,7 +445,6 @@ def plot_errorwindow_analysis(dataOut, savebool=False):
 # Data requirements analysis
 ################################################################################
 ################################################################################
-
 
 def plot_compare_datareq(storeDF_in, savebool=False, showfliers=False):
     """
@@ -565,10 +532,10 @@ def plot_compare_datareq(storeDF_in, savebool=False, showfliers=False):
 
 def plot_compare_sattest(storeDF_in, savebool=False):
     """
-    This function creates a boxplot  to compare the performance of different model with various levels of input data.
+    Compare the satellite data test (20% of data and with noise) for the two sites.
 
     Parameters:
-    storeDF_in (pandas.DataFrame): The input dataframe containing the data to be plotted. It should have columns 'perc', 'site', 'testR2' and 'testRMSE'.
+    storeDF_in (pandas.DataFrame): The input dataframe containing the data to be plotted. It should have columns 'case', 'site', 'testR2' and 'testRMSE'.
     savebool (bool, optional): A flag to determine whether to save the plot or not. If True, the plot is saved.
 
     Returns:

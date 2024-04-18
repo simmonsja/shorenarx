@@ -16,7 +16,6 @@ This repository contains the code to reproduce the figures in the publication "D
 - `01_Optuna_Run_Script.py`: Script to run the Optuna hyperparameter search given a config file.
 - `02a_CV_Run_Script.py`: Script to train the model given a config file.
 
-
 # Config files
 The config files are stored in `config/` as json files converted to dict upon loading. The config files are used to set the hyperparameters for the model and various decisions around the train/test split, input variables, and output variables. Typical settings include:
 
