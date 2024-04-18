@@ -18,16 +18,25 @@ def main():
         # 'config': os.path.join('.','config','narra_nohist_config.json'),
         # # Narrabeen ar1test
         # 'config': os.path.join('.','config','narra_ar1test_config.json'),
-        # Narrabeen datareq
-        'config': os.path.join('.','config','narra_datareq_config.json'),
-        # # Tairua base
-        # 'config': os.path.join('.','config','tairua_base_config.json'),
+        # # Narrabeen datareq
+        # 'config': os.path.join('.','config','narra_datareq_config.json'),
+        # # Narrabeen sattest 20%
+        # 'config': os.path.join('.','config','narra_sattest1_config.json'),
+        # # Narrabeen sattest 20% + noise
+        # 'config': os.path.join('.','config','narra_sattest2_config.json'),
+        
+        # Tairua base
+        'config': os.path.join('.','config','tairua_base_config.json'),
         # # Tairua nohist
         # 'config': os.path.join('.','config','tairua_nohist_config.json'),
         # # Tairua ar1test
         # 'config': os.path.join('.','config','tairua_ar1test_config.json'),
         # # Tairua datareq
         # 'config': os.path.join('.','config','tairua_datareq_config.json'),
+        # # Tairua sattest 20%
+        # 'config': os.path.join('.','config','tairua_sattest1_config.json'),
+        # # Tairua sattest 20% + noise
+        # 'config': os.path.join('.','config','tairua_sattest2_config.json'),
     }
 
     run_trial_subset = define_cv_run(nEnsembleMembers, trainingSettings, nStart=0)

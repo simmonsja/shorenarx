@@ -578,40 +578,70 @@ def plot_compare_sattest(storeDF_in, savebool=False):
     # boxplot of nohist vs base per fold per site
     sns.set_context("talk")
     sns.set_style("ticks",{'axes.grid': True,})
-    fig = plt.figure(figsize=(6,8))
-    ax1 = fig.add_subplot(211)
-    ax2 = fig.add_subplot(212)
-    palette = 'tab10'
+    fig = plt.figure(figsize=(6,4))
+    ax1 = fig.add_subplot(111)
+    palette = 'Set1'
 
-    storeDF = storeDF_in.copy().sort_values(by='perc')
-    storeDF['perc'] = storeDF['perc'].astype(np.int64)
+    storeDF = storeDF_in.copy()#.sort_values(by='case')
     storeDF['site'] = storeDF['site'].replace({'narra':'Narrabeen','tairua':'Tairua'})
 
     sns.boxplot(
         data=storeDF,
-        x='perc',y='testNMSE',hue='site',ax=ax1,
-        palette=palette, showfliers=showfliers,
+        x='site',y='testRMSE',hue='case',ax=ax1,
+        palette=palette, showfliers=False,
         boxprops=dict(alpha=0.5)
     )
-
-    sns.boxplot(
+    sns.swarmplot(
         data=storeDF,
-        x='perc',y='testR2',hue='site',ax=ax2,
-        palette=palette, showfliers=showfliers,
-        boxprops=dict(alpha=0.5)
+        x='site',y='testRMSE',hue='case',ax=ax1,
+        zorder=-99,palette='dark:#59656d',#palette='dark:k',
+        dodge=True, s=2, legend=False
     )
+    # add text above the median displaying the value 
+    for ii, this_site in enumerate(storeDF['site'].unique()):
+        for jj, this_case in enumerate(storeDF['case'].unique()):
+            median_val = storeDF.query('site=="{}" and case=="{}"'.format(this_site,this_case))['testRMSE'].median()
+
+            ax1.text(
+                ii + (jj-1)*0.2667,
+                median_val+0.1,
+                '{:.2f}'.format(median_val),
+                fontdict={'fontsize':8},
+                ha='center', va='bottom',
+                path_effects=[pe.withStroke(linewidth=3, foreground='white')]
+            )
+
+    # add axhline red dashed at 95% confidence interval for 'All' case, create separate lines for Narra and Tairua
+    for ii, this_site in enumerate(storeDF['site'].unique()):
+        # if not ii:
+        #     continue
+        lower_val = storeDF.query('site=="{}" and case=="All data"'.format(this_site))['testRMSE'].quantile(0.025)
+        upper_val = storeDF.query('site=="{}" and case=="All data"'.format(this_site))['testRMSE'].quantile(0.975)
+        cent = ii + 0.25 - (ii*0.5) # cheeky and lazy wont work for more sites
+        width = 0.2
+        ax1.axhline(
+            lower_val,
+            xmin=cent-width, xmax=cent+width,
+            linestyle='--', color='C3',
+            linewidth=1,
+            alpha=0.75
+        )
+        ax1.axhline(
+            upper_val,
+            xmin=cent-width, xmax=cent+width,
+            linestyle='--', color='C3',
+            linewidth=1,
+            alpha=0.75
+        )
 
     # turn on x and y grid
-    ax1.set_ylabel('Test NMSE', labelpad=10)
-    ax2.set_ylabel('Test R$^2$', labelpad=10)
-    ax2.set_xlabel('Percentage of data used in training', labelpad=10)
-    ax1.set_xlabel('')
-    ax1.get_legend().remove()
-    ax2.legend(loc=6, bbox_to_anchor=(1.025,1.075), title='Case')
+    ax1.set_ylabel('Test RMSE', labelpad=10)
+    ax1.set_xlabel('Site', labelpad=10)
+    ax1.legend(loc=6, bbox_to_anchor=(1.05,0.5), title='Case')
 
     if savebool:
         savePath =  os.path.join(
-            '.','figures','data_requirements', 'data_requirements_compare_bysite.pdf'
+            '.','figures','sattest_compare', 'sattest_compare_bysite.pdf'
         )
         os.makedirs(os.path.dirname(savePath), exist_ok=True)
         plt.savefig(savePath, bbox_inches='tight', dpi=600)

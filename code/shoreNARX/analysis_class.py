@@ -49,7 +49,7 @@ class TrainingClass:
         self.yStd = ['shl_std']
         self.yVars = ['Shoreline']
 
-        self.dataReq = False
+        # self.dataReq = False
         self.peakBool = False # include mean and peak over xSample
 
         ## model params
@@ -425,6 +425,7 @@ class TrainingClass:
 
         # now run through the cv_Instance
         statsOut = []
+        print('Running {} CV runs'.format(self.trainCombs.__len__()))
         for thisComb in self.trainCombs:
             statsOut.append(self.cv_Instance(thisComb, settings=modelSettings))
 
