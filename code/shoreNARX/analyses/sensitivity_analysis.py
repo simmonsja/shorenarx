@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -12,8 +11,8 @@ def run_sensitivity_analysis(trainObj,nreps,verbose=True):
 
     This function performs a sensitivity analysis by shuffling the input variables
     and observing the effect on the model's performance. The performance is measured
-    in terms of Root Mean Square Error (RMSE), Pearson's R correlation coefficient,
-    and Normalized Mean Square Error (NMSE).
+    in terms of Root Mean Square Error (RMSE), Pearson's R correlation coefficient, 
+    R2 coefficient of determination, and Normalized Mean Square Error (NMSE).
 
     Parameters:
     trainObj (object): The training object containing the model, input variables,

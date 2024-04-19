@@ -1,11 +1,13 @@
-import sys, os
+import os
 from joblib import Parallel, delayed
 
-from shoreNARX import TrainingClass, define_cv_run
+from shoreNARX import define_cv_run
 
 def main():
     '''
-    This script will run a cross-validation trial for each ensemble member.
+    This script will run a cross-validation trial for various configurations
+    as specified in the config files. Designed to be run from the command line 
+    as a script.
     Run this from the base directory with:
         nohup python code/02a_CV_Run_Script.py > nohup_base_narra.out &
     '''

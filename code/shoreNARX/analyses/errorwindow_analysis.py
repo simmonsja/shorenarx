@@ -1,14 +1,19 @@
-import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from tqdm import tqdm
 
 ################################################################################
 ################################################################################
 
 def run_errorwindow_analysis(trainObjCollection: dict):
+    """
+    Perform error window analysis on a collection of training objects. Here we just track the residual by the forecast horizon.
+
+    Args:
+        trainObjCollection (dict): A dictionary containing the training objects.
+
+    Returns:
+        pandas.DataFrame: The melted data containing the error window analysis results.
+    """
     #create the holding tank
     dataOut = {}
     for ii, key in enumerate(trainObjCollection.keys()):

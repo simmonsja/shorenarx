@@ -16,7 +16,7 @@ RUN curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.s
     rm -rf /Miniconda3-latest-Linux-x86_64.sh
 WORKDIR /build
 RUN conda install python=3.10
-RUN conda install pandas scikit-learn seaborn ipywidgets jupyterlab scipy
-RUN pip install numpyro arviz
+RUN conda install pandas scikit-learn seaborn ipywidgets jupyterlab ipykernel scipy joblib
 RUN conda install -c conda-forge pytorch torchvision optuna
 RUN conda install -c conda-forge multiprocess
+RUN pip install cartopy
